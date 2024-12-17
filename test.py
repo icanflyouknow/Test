@@ -54,3 +54,47 @@ def send_sms(token, phone):
         elif 'tovar' in user_data[user_id]['holat']:
             await check_items(message)
 
+ @dp.message(Command("start"))
+    async def start(message: types.Message):
+        user_id = message.from_user.id
+        user_data[user_id] = {}
+        button = [
+            [types.KeyboardButton(text="Raqam jo'nastish", request_contact=True )]
+        ]
+        keyboard = types.ReplyKeyboardMarkup(keyboard=button, resize_keyboard=True)
+        await message.answer("Assalomu alaykum! LesAiles yetkazib berish xizmatiga xush kelibsiz:", reply_markup=keyboard)
+        print(user_data)
+
+    async def send_code(message: types.Message):
+        user_id = message.from_user.id
+        i = '+1234567890'
+        ok = True
+        if message.contact is not None:
+            phone_c = message.contact.phone_number
+            user_data[user_id]["phone"] = phone_c
+            ver_code = randint(100000, 999999)
+            user_data[user_id]['verification_code'] = ver_code
+            try:
+                token = login_and_token(email, password)
+                send_sms(token, phone_c)
+                await message.answer(f"Nomeringizga tasdiqlash ko'di yuborildi\n"
+                                 f"Iltimos kodni kiriting: {ver_code}")
+            except Exception as ex:
+                await message.answer(f"{ex}")
+        elif len(message.text) == 13 and message.text[0:4] == '+998':
+            for symbol in message.text:
+            if symbol not in i:
+                await message.answer('Hato nomer kiritildi')
+                ok = False
+                break
+
+        if ok == True:
+            phone = message.text
+            user_data[user_id]["phone"] = phone
+            verification_code = randint(10000, 99999)
+            user_data[user_id]['verification_code'] = verification_code
+            await message.answer(f"Nomeringizga tasdiqlash ko'di yuborildi\n"
+                                 f"Iltimos kodni kiriting: {verification_code}")
+    else:
+        await message.answer("Hato nomer kiritildi")
+    print(user_data)
